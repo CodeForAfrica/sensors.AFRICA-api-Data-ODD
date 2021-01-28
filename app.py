@@ -19,7 +19,7 @@ app = Chalice(app_name='sensors-africa-odd')
 #     app.log.debug("run")
 #     return run(app)
 
-# Automatically runs every 1 hour
+# Automatically runs every 1/2 day
 @app.schedule(Rate(int(SCHEDULE_RATE), unit=Rate.HOURS))
 def periodic_task(event):
     app.log.debug(event.to_dict())

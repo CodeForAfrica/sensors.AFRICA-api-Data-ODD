@@ -1,29 +1,27 @@
-from chalice import Chalice
+import sentry_sdk
+
+from chalice import Chalice, Rate
+from chalicelib.service import run
+from chalicelib.settings import SCHEDULE_RATE, SENTRY_DSN
+
+from sentry_sdk.integrations.chalice import ChaliceIntegration
+
+sentry_sdk.init(
+    dsn=SENTRY_DSN,
+    integrations=[ChaliceIntegration()],
+    traces_sample_rate=1.0
+)
 
 app = Chalice(app_name='sensors-africa-odd')
 
+# @app.route("/")
+# def index():
+#     app.log.debug("run")
+#     return run(app)
 
-@app.route('/')
-def index():
-    return {'hello': 'world'}
+# Automatically runs every 1/2 day
+@app.schedule(Rate(int(SCHEDULE_RATE), unit=Rate.HOURS))
+def periodic_task(event):
+    app.log.debug(event.to_dict())
+    return run(app)
 
-
-# The view function above will return {"hello": "world"}
-# whenever you make an HTTP GET request to '/'.
-#
-# Here are a few more examples:
-#
-# @app.route('/hello/{name}')
-# def hello_name(name):
-#    # '/hello/james' -> {"hello": "james"}
-#    return {'hello': name}
-#
-# @app.route('/users', methods=['POST'])
-# def create_user():
-#     # This is the JSON body the user sent in their POST request.
-#     user_as_json = app.current_request.json_body
-#     # We'll echo the json body back to the user in a 'user' key.
-#     return {'user': user_as_json}
-#
-# See the README documentation for more examples.
-#

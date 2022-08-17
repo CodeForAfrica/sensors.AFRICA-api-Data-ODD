@@ -11,14 +11,15 @@ from chalicelib.settings import S3_BUCKET_NAME, S3_OBJECT_KEY
 
 from datetime import datetime as dt
 
-def get_nodes_sensor_data(node_uid):
+def get_nodes_sensor_data(node_uid, app):
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36",
         }
     response = requests.get(
         url="http://sensors.opendata.durban/CS/download/{}".format(node_uid), headers=headers)
     if not response.ok:
-        raise Exception(response.reason)
+        app.log.error("Error getting sensor data for node {}".format(node_uid))
+        return
     return response.content.decode('utf-8')
 
 
@@ -38,7 +39,7 @@ def run(app):
         if not node in node_last_entry_dict:
                 node_last_entry_dict[node] = "2000-01-01"
 
-        sensor_data = get_nodes_sensor_data(node)
+        sensor_data = get_nodes_sensor_data(node, app)
 
         data_cr = csv.reader(sensor_data.splitlines(), delimiter=',')
         data_list = list(data_cr)
